@@ -7,7 +7,8 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/ws", hd.MainHandler)
+	http.HandleFunc("/", hd.HomeHandler)
+	http.HandleFunc("/ws", hd.HandlerWS)
 
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))

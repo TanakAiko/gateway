@@ -15,7 +15,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func MainHandler(w http.ResponseWriter, r *http.Request) {
+func HandlerWS(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatalf("Failed to set up WebSocket upgrade: %v", err)
