@@ -26,25 +26,24 @@ function toggleForms() {
 var registerFormID = document.getElementById("registerFormID")
 registerFormID.addEventListener("submit", async (event) => {
     event.preventDefault()
+    const urlRegister = 'http://localhost:8080/register'
     const data = getDataForm(registerFormID)
     data.age = strToInt(data.age)
 
     try {
-        const urlRegister = 'http://localhost:8080/register'
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
+            Credential: 'include',
         };
         const response = await fetch(urlRegister, requestOptions)
 
         if (!response.ok) {
             throw new Error(`HTTP error status: ${response.status}`);
         }
-
-        const result = await response.json();
+        result = await response.json()
         console.log(result);
-
     } catch (error) {
         console.error(`Error while sending data`, error);
     }
@@ -52,12 +51,6 @@ registerFormID.addEventListener("submit", async (event) => {
     toggleForms()
 
 })
-
-function getDataForm(form) {
-    const dataForm = new FormData(form)
-    var data = Object.fromEntries(dataForm.entries())
-    return data
-}
 
 function strToInt(str) {
     num = Number(str)
@@ -69,11 +62,10 @@ function strToInt(str) {
 var loginFormID = document.getElementById("loginFormID")
 loginFormID.addEventListener("submit", async (event) => {
     event.preventDefault()
-
+    urlLogin = 'http://localhost:8080/login'
     const data = getDataForm(loginFormID)
 
     try {
-        const urlLogin = 'http://localhost:8080/login'
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -85,12 +77,17 @@ loginFormID.addEventListener("submit", async (event) => {
         if (!response.ok) {
             throw new Error(`HTTP error status: ${response.status}`);
         }
-
-        const result = await response.json();
+        result = await response.json()
         console.log(result);
-
     } catch (error) {
-        console.error(`Error while sending data`, error);
+        console.error(error);
     }
-
 })
+
+//********************************************************************************************************************** */
+
+function getDataForm(form) {
+    const dataForm = new FormData(form)
+    var data = Object.fromEntries(dataForm.entries())
+    return data
+}
