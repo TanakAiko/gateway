@@ -73,13 +73,17 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
+	for _, cookie := range resp.Cookies() {
+		http.SetCookie(w, cookie)
+	}
+
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	var session Session
+	/* var session Session
 
 	if err = json.Unmarshal(responseBody, &session); err != nil {
 		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
@@ -89,12 +93,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "sessionID",
 		Value:    session.Id,
-		Path:     "http://127.0.0.1:5500",
 		Expires:  session.Expiration,
 		HttpOnly: true,
 	})
 
-	fmt.Println("session: ", session)
+	fmt.Println("session: ", session) */
+
+	// Transférer les cookies du deuxième serveur au client
 
 	w.WriteHeader(resp.StatusCode)
 	w.Header().Set("Content-Type", "application/json")
