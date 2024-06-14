@@ -22,4 +22,19 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 	}
 	defer ws.Close()
 
+	// Infinite loop to listen for messages from the client
+	for {
+		messageType, message, err := ws.ReadMessage()
+		if err != nil {
+			log.Printf("Error reading message: %v", err)
+			break // Exit the loop in case of error
+		}
+
+		// Echo the received message back to the client
+		if err := ws.WriteMessage(messageType, message); err != nil {
+			log.Printf("Error writing message: %v", err)
+			break // Exit the loop in case of error
+		}
+	}
+
 }

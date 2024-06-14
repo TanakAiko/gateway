@@ -85,7 +85,18 @@ loginFormID.addEventListener("submit", async (event) => {
         }
 
         const result = await response.json();
+
         console.log(result);
+
+        let ws = new WebSocket("ws://localhost:8080/ws");
+
+        ws.onerror = function (error) {
+            console.error("WebSocket Error: ", error);
+        };
+
+        ws.onopen = function () {
+            console.log("Connection is open...");
+        };
 
     } catch (error) {
         console.error('Erreur lors de l\'envoi des données:', error);
