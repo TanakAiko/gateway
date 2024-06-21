@@ -53,8 +53,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 
 	for _, cookie := range resp.Cookies() {
+		fmt.Println("cookie : ", cookie)
 		http.SetCookie(w, cookie)
 	}
+	http.SetCookie(w, &http.Cookie{
+		Name:  "test",
+		Value: "1234",
+		Path:  "/",
+	})
 
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -64,7 +70,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Transférer les cookies du deuxième serveur au client
-	w.WriteHeader(resp.StatusCode)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(resp.StatusCode)
 	w.Write(responseBody)
 }

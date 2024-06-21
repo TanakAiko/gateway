@@ -38,10 +38,14 @@ func ValidSessionMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		if resp.StatusCode == http.StatusOK {
+			// Créez un nouveau cookie avec le même nom mais avec une expiration passée
+			cookie := http.Cookie{Name: "sessionID", Expires: time.Unix(0, 0), Path: "/"}
+			http.SetCookie(w, &cookie)
+
 			w.WriteHeader(http.StatusMovedPermanently)
 			w.Write([]byte("Redirect to login page"))
 		} else {
-			http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 

@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", hd.HomeHandler)
 	http.HandleFunc("/register", mw.CorsMiddleware(hd.RegisterHandler))
 	http.HandleFunc("/login", mw.CorsMiddleware(hd.LoginHandler))
 	http.HandleFunc("/ws", hd.HandlerWS)

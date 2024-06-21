@@ -35,14 +35,14 @@ registerFormID.addEventListener("submit", async (event) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
-            Credential: 'include',
+            credential: 'include',
         };
         const response = await fetch(urlRegister, requestOptions)
 
         if (!response.ok) {
             throw new Error(`HTTP error status: ${response.status}`);
         }
-        result = await response.json()
+        const result = await response.json()
         console.log(result);
     } catch (error) {
         console.error(`Error while sending data`, error);
@@ -52,10 +52,6 @@ registerFormID.addEventListener("submit", async (event) => {
 
 })
 
-function strToInt(str) {
-    num = Number(str)
-    return parseInt(num, 10)
-}
 
 //********************************************************************************************************************** */
 
@@ -70,15 +66,26 @@ loginFormID.addEventListener("submit", async (event) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
-            Credential: 'include',
+            credential: 'include'
         };
         const response = await fetch(urlLogin, requestOptions)
 
         if (!response.ok) {
             throw new Error(`HTTP error status: ${response.status}`);
         }
-        result = await response.json()
+        const result = await response.json()
         console.log(result);
+
+        let ws = new WebSocket("ws://localhost:8080/ws");
+
+        ws.onerror = function (error) {
+            console.error("WebSocket Error: ", error);
+        };
+
+        ws.onopen = function () {
+            console.log("Connection is open...");
+        };
+
     } catch (error) {
         console.error(error);
     }
@@ -90,4 +97,9 @@ function getDataForm(form) {
     const dataForm = new FormData(form)
     var data = Object.fromEntries(dataForm.entries())
     return data
+}
+
+function strToInt(str) {
+    num = Number(str)
+    return parseInt(num, 10)
 }
