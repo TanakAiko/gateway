@@ -56,11 +56,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("cookie : ", cookie)
 		http.SetCookie(w, cookie)
 	}
-	http.SetCookie(w, &http.Cookie{
-		Name:  "test",
-		Value: "1234",
-		Path:  "/",
-	})
 
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
