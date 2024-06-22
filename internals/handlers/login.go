@@ -30,8 +30,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("body: ", string(body))
-
 	var credential Credential
 
 	if err = json.Unmarshal(body, &credential); err != nil {

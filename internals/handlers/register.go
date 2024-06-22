@@ -16,6 +16,7 @@ type User struct {
 	LastName  string `json:"lastName"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
+	SessionID string `json:"sessionID"`
 }
 
 var URLauth = "http://localhost:8081"
