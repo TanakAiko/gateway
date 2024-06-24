@@ -46,7 +46,7 @@ func getMessages(w http.ResponseWriter) (int, string) {
 
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
+		fmt.Println("Internal server error: " + err.Error())
 		return 0, ""
 	}
 

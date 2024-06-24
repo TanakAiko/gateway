@@ -88,6 +88,40 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 				response.Data = "OK"
 			}
 
+		case "postCreate":
+			response.Action = "postCreate"
+			if status := createPost(w, msg.Data); status != http.StatusCreated {
+				response.Data = "error"
+			} else {
+				response.Data = "OK"
+			}
+
+		case "getOnePost":
+			response.Action = "getOnePost"
+			status, post := getOnePost(w, msg.Data)
+			if status != http.StatusOK {
+				response.Data = "error"
+			} else {
+				response.Data = post
+			}
+
+		case "getAllPost":
+			response.Action = "getAllPost"
+			status, posts := getAllPost(w)
+			if status != http.StatusOK {
+				response.Data = "error"
+			} else {
+				response.Data = posts
+			}
+
+		case "deletePost":
+			response.Action = "deletePost"
+			if status := deletePost(w, msg.Data); status != http.StatusOK {
+				response.Data = "error"
+			} else {
+				response.Data = "OK"
+			}
+
 		case "echo":
 			response = Message{Action: "reply", Data: msg.Data}
 		// Add more actions as needed
