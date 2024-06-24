@@ -2,18 +2,21 @@ package main
 
 import (
 	"fmt"
+	conf "gateway/config"
 	hd "gateway/internals/handlers"
+	ws "gateway/internals/handlers/ws"
 	mw "gateway/internals/middleware"
 	"net/http"
 )
 
 func main() {
+	http.HandleFunc("/authorized", mw.CorsMiddleware(hd.AuthorizedHandler))
 	http.HandleFunc("/register", mw.CorsMiddleware(hd.RegisterHandler))
 	http.HandleFunc("/login", mw.CorsMiddleware(hd.LoginHandler))
-	http.HandleFunc("/ws", hd.HandlerWS)
+	http.HandleFunc("/ws", ws.HandlerWS)
 
-	fmt.Println("WebSocket server starting on port http://localhost:8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	fmt.Printf("Gateway server starting on port http://localhost:%v\n", conf.Port)
+	if err := http.ListenAndServe(":"+conf.Port, nil); err != nil {
 		fmt.Println(err)
 	}
 }

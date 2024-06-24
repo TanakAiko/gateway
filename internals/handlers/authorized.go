@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	conf "gateway/config"
 	md "gateway/model"
 	"io"
 	"net/http"
 )
 
 func AuthorizedHandler(w http.ResponseWriter, r *http.Request) {
-	const action = "login"
+	const action = "authorized"
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "methode not allowed", http.StatusMethodNotAllowed)
@@ -24,7 +25,7 @@ func AuthorizedHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user User
+	var user md.User
 
 	if err = json.Unmarshal(body, &user); err != nil {
 		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
@@ -42,7 +43,7 @@ func AuthorizedHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req, err := http.NewRequest("POST", URLauth, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", conf.URLauth, bytes.NewBuffer(jsonData))
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return

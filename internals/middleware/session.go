@@ -1,13 +1,12 @@
 package middleware
 
 import (
+	conf "gateway/config"
 	"gateway/internals/tools"
 	md "gateway/model"
 	"net/http"
 	"time"
 )
-
-var URLauth = "http://localhost:8081"
 
 // for each request, check if the session is valid
 func ValidSessionMiddleware(next http.HandlerFunc) http.HandlerFunc {
@@ -31,7 +30,7 @@ func ValidSessionMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			Body:   cookie.Value,
 		}
 
-		resp, err := tools.SendRequest(w, bodyData, http.MethodPost, URLauth)
+		resp, err := tools.SendRequest(w, bodyData, http.MethodPost, conf.URLauth)
 		if err != nil {
 			http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 			return

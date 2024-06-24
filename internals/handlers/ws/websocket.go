@@ -3,8 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"gateway/internals/tools"
-	md "gateway/model"
 	"log"
 	"net/http"
 
@@ -46,14 +44,19 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
+		fmt.Println("msg: ", msg)
+
 		switch msg.Action {
 		case "logout":
 			response.Action = "logout"
-			if status := logoutRequest(w, msg.Data); status != http.StatusOK {
+			if status := LogoutRequest(w, msg.Data); status != http.StatusOK {
 				response.Data = "error"
 			} else {
 				response.Data = "OK"
 			}
+
+		case "message":
+			response.Action = "message"
 
 		case "echo":
 			response = Message{Action: "reply", Data: msg.Data}
@@ -62,28 +65,12 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 			log.Println("Unknown action:", msg.Action)
 		}
 
+		fmt.Println("response: ", response)
+
 		responseBytes, _ := json.Marshal(response)
 		if err := ws.WriteMessage(websocket.TextMessage, responseBytes); err != nil {
 			log.Println(err)
 		}
 	}
 
-}
-
-func logoutRequest(w http.ResponseWriter, sessionID string) int {
-	var user User
-	user.SessionID = sessionID
-	bodyData := md.RequestBody{
-		Action: "logout",
-		Body:   user,
-	}
-
-	resp, err := tools.SendRequest(w, bodyData, "POST", URLauth)
-	if err != nil {
-		fmt.Println("Internal server error: " + err.Error())
-		return 0
-	}
-	defer resp.Body.Close()
-
-	return resp.StatusCode
 }

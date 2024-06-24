@@ -3,23 +3,11 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	conf "gateway/config"
 	md "gateway/model"
 	"io"
 	"net/http"
 )
-
-type User struct {
-	Nickname  string `json:"nickname"`
-	Age       int    `json:"age"`
-	Gender    string `json:"gender"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	SessionID string `json:"sessionID"`
-}
-
-var URLauth = "http://localhost:8081"
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	const action = "register"
@@ -34,7 +22,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user User
+	var user md.User
 
 	if err = json.Unmarshal(body, &user); err != nil {
 		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
@@ -52,7 +40,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req, err := http.NewRequest("POST", URLauth, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", conf.URLauth, bytes.NewBuffer(jsonData))
 	if err != nil {
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
 		return

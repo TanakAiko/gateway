@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	conf "gateway/config"
 	"gateway/internals/tools"
 	md "gateway/model"
 	"io"
@@ -42,7 +43,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Body:   credential,
 	}
 
-	resp, err := tools.SendRequest(w, bodyData, "POST", URLauth)
+	resp, err := tools.SendRequest(w, bodyData, "POST", conf.URLauth)
 	if err != nil {
 		fmt.Println("Internal server error: " + err.Error())
 		http.Error(w, "Internal server error: "+err.Error(), http.StatusInternalServerError)
