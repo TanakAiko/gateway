@@ -49,14 +49,44 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 		switch msg.Action {
 		case "logout":
 			response.Action = "logout"
-			if status := LogoutRequest(w, msg.Data); status != http.StatusOK {
+			if status := logoutRequest(w, msg.Data); status != http.StatusOK {
 				response.Data = "error"
 			} else {
 				response.Data = "OK"
 			}
 
-		case "message":
-			response.Action = "message"
+		case "messageCreate":
+			response.Action = "messageCreate"
+			if status := createMessage(w, msg.Data); status != http.StatusOK {
+				response.Data = "error"
+			} else {
+				response.Data = "OK"
+			}
+
+		case "messageGets":
+			response.Action = "messageGets"
+			status, chats := getMessages(w)
+			if status != http.StatusOK {
+				response.Data = "error"
+			} else {
+				response.Data = chats
+			}
+
+		case "messageStatusReceived":
+			response.Action = "messageStatusReceived"
+			if status := setStatusReceived(w, msg.Data); status != http.StatusOK {
+				response.Data = "error"
+			} else {
+				response.Data = "OK"
+			}
+
+		case "messageStatusRead":
+			response.Action = "messageStatusRead"
+			if status := setStatusRead(w, msg.Data); status != http.StatusOK {
+				response.Data = "error"
+			} else {
+				response.Data = "OK"
+			}
 
 		case "echo":
 			response = Message{Action: "reply", Data: msg.Data}

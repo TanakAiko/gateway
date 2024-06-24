@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func LogoutRequest(w http.ResponseWriter, sessionID string) int {
+func logoutRequest(w http.ResponseWriter, sessionID string) int {
 	var user md.User
 	user.SessionID = sessionID
 	bodyData := md.RequestBody{
