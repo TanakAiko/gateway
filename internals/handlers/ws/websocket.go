@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	md "gateway/model"
 	"log"
 	"net/http"
 
@@ -22,12 +23,39 @@ type Message struct {
 	Data   string `json:"data"`
 }
 
+type Client struct {
+	User md.User
+	Conn *websocket.Conn
+	Send chan []byte
+}
+
+var clients = make(map[int]*Client)
+var broadcast = make(chan []byte)
+
 func HandlerWS(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Fatalf("Failed to set up WebSocket upgrade: %v", err)
+		fmt.Printf("Failed to set up WebSocket upgrade: %v\n", err)
+		return
 	}
 	defer ws.Close()
+
+	sessionID, err := r.Cookie("sessionID")
+	if err != nil {
+		fmt.Printf("Failed to get cookie: %v\n", err)
+		return
+	}
+
+	status, user := getUserData(w, sessionID.Value)
+	if status != http.StatusOK {
+		fmt.Printf("Failed to get user's data: %v\n", err)
+		return
+	}
+
+	client := &Client{User: user, Conn: ws, Send: make(chan []byte)}
+	clients[client.User.Id] = client
+
+	go writeToClients(client)
 
 	// Infinite loop to listen for messages from the client
 	for {
@@ -35,6 +63,7 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 		_, messageBytes, err := ws.ReadMessage()
 		if err != nil {
 			log.Printf("Error reading message: %v", err)
+			delete(clients, client.User.Id)
 			break // Exit the loop in case of error
 		}
 
@@ -61,6 +90,7 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 				response.Data = "error"
 			} else {
 				response.Data = "OK"
+				broadcast <- []byte(msg.Data)
 			}
 
 		case "messageGets":
@@ -137,4 +167,32 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+}
+
+func HandleMessages() {
+	for {
+		msg := <-broadcast
+		var message md.MessageChat
+		if err := json.Unmarshal(msg, &message); err != nil {
+			fmt.Println(err)
+			continue
+		}
+		if recipient, ok := clients[message.ReceiverId]; ok {
+			recipient.Send <- msg
+		}
+	}
+}
+
+func writeToClients(client *Client) {
+	var response Message
+	response.Action = "newMessage"
+	for message := range client.Send {
+		response.Data = string(message)
+		responseBytes, _ := json.Marshal(response)
+		err := client.Conn.WriteMessage(websocket.TextMessage, responseBytes)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
 }

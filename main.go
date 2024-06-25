@@ -15,6 +15,8 @@ func main() {
 	http.HandleFunc("/login", mw.CorsMiddleware(hd.LoginHandler))
 	http.HandleFunc("/ws", ws.HandlerWS)
 
+	go ws.HandleMessages()
+
 	fmt.Printf("Gateway server starting on port http://localhost:%v\n", conf.Port)
 	if err := http.ListenAndServe(":"+conf.Port, nil); err != nil {
 		fmt.Println(err)
