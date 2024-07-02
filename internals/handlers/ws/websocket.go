@@ -46,7 +46,7 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status, user := getUserData(w, sessionID.Value)
+	status, user := GetUserData(w, sessionID.Value)
 	if status != http.StatusOK {
 		fmt.Printf("Failed to get user's data: %v\n", err)
 		return
@@ -119,6 +119,7 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "postCreate":
+
 			response.Action = "postCreate"
 			if status := createPost(w, msg.Data); status != http.StatusCreated {
 				response.Data = "error"

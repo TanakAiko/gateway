@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	http.HandleFunc("/getUserData", mw.CorsMiddleware(hd.GetUserDataHandler))
 	http.HandleFunc("/authorized", mw.CorsMiddleware(hd.AuthorizedHandler))
 	http.HandleFunc("/register", mw.CorsMiddleware(hd.RegisterHandler))
 	http.HandleFunc("/login", mw.CorsMiddleware(hd.LoginHandler))

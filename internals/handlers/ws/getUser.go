@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func getUserData(w http.ResponseWriter, sessionID string) (int, md.User) {
+func GetUserData(w http.ResponseWriter, sessionID string) (int, md.User) {
 	var user md.User
 	user.SessionID = sessionID
 	bodyData := md.RequestBody{
