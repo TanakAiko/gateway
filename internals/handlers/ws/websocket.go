@@ -73,8 +73,6 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		fmt.Println("msg: ", msg)
-
 		switch msg.Action {
 		case "logout":
 			response.Action = "logout"
@@ -119,9 +117,8 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 			}
 
 		case "postCreate":
-
 			response.Action = "postCreate"
-			if status := createPost(w, msg.Data); status != http.StatusCreated {
+			if status := createPost(w, msg.Data, client.User.Id); status != http.StatusCreated {
 				response.Data = "error"
 			} else {
 				response.Data = "OK"

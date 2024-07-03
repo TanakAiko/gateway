@@ -1,19 +1,34 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	conf "gateway/config"
 	"gateway/internals/tools"
 	md "gateway/model"
 	"io"
 	"net/http"
+	"os"
+	"strings"
+
+	"github.com/google/uuid"
 )
 
-func createPost(w http.ResponseWriter, data string) int {
+func createPost(w http.ResponseWriter, data string, userId int) int {
 	var post md.Post
+	post.UserId = userId
 	if err := json.Unmarshal([]byte(data), &post); err != nil {
 		fmt.Println("Internal server error: " + err.Error())
+		return 0
+	}
+
+	postPath := "./static/posts"
+	filename, err := decodeBase64Image(post.Img, postPath)
+	post.Img = filename
+	if err != nil {
+		fmt.Println("ERRRRRRRRRRRREEEEEEEEEEEUUUUUUUUUUUUUUURRRRRRRRRRRRR")
 		return 0
 	}
 
@@ -102,4 +117,44 @@ func deletePost(w http.ResponseWriter, data string) int {
 
 	return resp.StatusCode
 
+}
+
+func decodeBase64Image(base64Image string, outputFilePath string) (string, error) {
+
+	fmt.Println("Début du décodage de l'image")
+
+	// Vérifier si la chaîne commence par "data:"
+	if strings.HasPrefix(base64Image, "data:") {
+		// Extraire la partie Base64 après la virgule
+		parts := strings.SplitN(base64Image, ",", 2)
+		if len(parts) != 2 {
+			return "", errors.New("format de chaîne data: invalide")
+		}
+		base64Image = parts[1]
+	}
+
+	fmt.Println("Base64Image après extraction:", base64Image[:30]) // Afficher les premiers caractères pour vérifier
+
+	// Décoder la chaîne Base64 en un tableau d'octets
+	data, err := base64.StdEncoding.DecodeString(base64Image)
+	if err != nil {
+		fmt.Println("Erreur lors du décodage Base64:", err)
+		return "", err
+	}
+
+	fmt.Println("Décodage Base64 réussi. Longueur des données:", len(data))
+
+	// Vérifier le contenu décodé (uniquement les premiers octets pour éviter une sortie massive)
+
+	fileName := outputFilePath + uuid.New().String() + ".jpeg"
+
+	// Écrire les octets décodés dans un fichier
+	err = os.WriteFile(fileName, data, 0644)
+	if err != nil {
+		fmt.Println("Erreur lors de l'écriture du fichier:", err)
+		return "", err
+	}
+
+	fmt.Println("Écriture du fichier réussie:", outputFilePath)
+	return fileName, nil
 }
