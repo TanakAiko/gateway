@@ -24,11 +24,11 @@ func createPost(w http.ResponseWriter, data string, userId int) int {
 		return 0
 	}
 
-	postPath := "./static/posts"
+	postPath := "./static/images/posts/"
 	filename, err := decodeBase64Image(post.Img, postPath)
 	post.Img = filename
 	if err != nil {
-		fmt.Println("ERRRRRRRRRRRREEEEEEEEEEEUUUUUUUUUUUUUUURRRRRRRRRRRRR")
+		fmt.Println("Internal server error: " + err.Error())
 		return 0
 	}
 
@@ -79,7 +79,6 @@ func getAllPost(w http.ResponseWriter) (int, string) {
 	bodyData := md.RequestBody{
 		Action: "getAll",
 	}
-
 	resp, err := tools.SendRequest(w, bodyData, "POST", conf.URLPost)
 	if err != nil {
 		fmt.Println("Internal server error: " + err.Error())
@@ -93,7 +92,29 @@ func getAllPost(w http.ResponseWriter) (int, string) {
 		return 0, ""
 	}
 
-	return resp.StatusCode, string(responseBody)
+	var posts []md.Post
+	if err := json.Unmarshal([]byte(responseBody), &posts); err != nil {
+		fmt.Println("Internal server error: " + err.Error())
+		return 0, ""
+	}
+
+	for i := 0; i < len(posts); i++ {
+		base64Code, err := encodeImageToBase64(posts[i].Img)
+		if err != nil {
+			fmt.Println("Internal server error: " + err.Error())
+			return 0, ""
+		}
+
+		posts[i].ImgBase64 = base64Code
+	}
+
+	response, err := json.Marshal(posts)
+	if err != nil {
+		fmt.Println("Internal server error: " + err.Error())
+		return 0, ""
+	}
+
+	return resp.StatusCode, string(response)
 }
 
 func deletePost(w http.ResponseWriter, data string) int {
@@ -157,4 +178,17 @@ func decodeBase64Image(base64Image string, outputFilePath string) (string, error
 
 	fmt.Println("Écriture du fichier réussie:", outputFilePath)
 	return fileName, nil
+}
+
+func encodeImageToBase64(imagePath string) (string, error) {
+	imageBytes, err := os.ReadFile(imagePath)
+	if err != nil {
+		return "", fmt.Errorf("erreur lors de la lecture du fichier image: %w", err)
+	}
+
+	base64Encoded := base64.StdEncoding.EncodeToString(imageBytes)
+
+	fmt.Println("base64Encoded: ", base64Encoded)
+
+	return base64Encoded, nil
 }
