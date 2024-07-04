@@ -137,7 +137,26 @@ func deletePost(w http.ResponseWriter, data string) int {
 	defer resp.Body.Close()
 
 	return resp.StatusCode
+}
 
+func getLastPost(w http.ResponseWriter) (int, string) {
+	status, posts := getAllPost(w)
+	if status != http.StatusOK {
+		return 0, ""
+	}
+
+	var tabPost []md.Post
+	if err := json.Unmarshal([]byte(posts), &tabPost); err != nil {
+		return 0, ""
+	}
+
+	var tabToSend = []md.Post{tabPost[0]}
+	toSend, err := json.Marshal(tabToSend)
+	if err != nil {
+		return 0, ""
+	}
+
+	return 200, string(toSend)
 }
 
 func decodeBase64Image(base64Image string, outputFilePath string) (string, error) {

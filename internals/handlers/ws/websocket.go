@@ -122,35 +122,7 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 				response.Data = "error"
 			} else {
 				response.Data = "OK"
-
-				var replyUpdate Message
-				replyUpdate.Action = "updatePosts"
-
-				status, posts := getAllPost(w)
-				if status != http.StatusOK {
-					response.Data = "error"
-				} else {
-					var tabPost []md.Post
-					if err := json.Unmarshal([]byte(posts), &tabPost); err != nil {
-						response.Data = "error"
-					} else {
-						var tabToSend = []md.Post{tabPost[0]}
-						toSend, err := json.Marshal(tabToSend)
-						if err != nil {
-							response.Data = "error"
-						} else {
-							replyUpdate.Data = string(toSend)
-						}
-					}
-				}
-
-				for _, client := range clients {
-					responseBytes, _ := json.Marshal(replyUpdate)
-					if err := client.Conn.WriteMessage(websocket.TextMessage, responseBytes); err != nil {
-						log.Println(err)
-					}
-				}
-
+				sendNewPostToAll(w)
 			}
 
 		case "getOnePost":
@@ -218,6 +190,28 @@ func writeToClients(client *Client) {
 		responseBytes, _ := json.Marshal(response)
 		err := client.Conn.WriteMessage(websocket.TextMessage, responseBytes)
 		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+}
+
+func sendNewPostToAll(w http.ResponseWriter) {
+	var replyUpdate Message
+	replyUpdate.Action = "updatePosts"
+	status, lastPost := getLastPost(w)
+	if status == 0 {
+		replyUpdate.Data = "error"
+	} else {
+		replyUpdate.Data = lastPost
+	}
+
+	replyUpdate.Data = string(lastPost)
+
+	responseBytes, _ := json.Marshal(replyUpdate)
+
+	for _, client := range clients {
+		if err := client.Conn.WriteMessage(websocket.TextMessage, responseBytes); err != nil {
 			fmt.Println(err)
 			return
 		}
