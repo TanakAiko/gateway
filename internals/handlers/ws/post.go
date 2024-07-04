@@ -188,7 +188,5 @@ func encodeImageToBase64(imagePath string) (string, error) {
 
 	base64Encoded := base64.StdEncoding.EncodeToString(imageBytes)
 
-	fmt.Println("base64Encoded: ", base64Encoded)
-
 	return base64Encoded, nil
 }
