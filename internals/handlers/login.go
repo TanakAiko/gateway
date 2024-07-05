@@ -52,7 +52,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	defer resp.Body.Close()
 
 	for _, cookie := range resp.Cookies() {
-		fmt.Println("cookie : ", cookie)
 		http.SetCookie(w, cookie)
 	}
 

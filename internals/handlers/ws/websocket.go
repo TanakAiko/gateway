@@ -73,7 +73,10 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
+		fmt.Println("msg.Action: ", msg.Action)
+
 		switch msg.Action {
+
 		case "logout":
 			response.Action = "logout"
 			if status := logoutRequest(w, msg.Data); status != http.StatusOK {
@@ -121,8 +124,8 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 			if status := createPost(w, msg.Data, client.User.Id); status != http.StatusCreated {
 				response.Data = "error"
 			} else {
-				response.Data = "OK"
 				sendNewPostToAll(w)
+				response.Data = "OK"
 			}
 
 		case "getOnePost":
@@ -151,14 +154,21 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 				response.Data = "OK"
 			}
 
+		case "updateLike":
+			response.Action = "updateLike"
+			if status := updateLike(w, msg.Data); status != http.StatusOK {
+				response.Data = "error"
+			} else {
+				sendNewLike(w, client.User.Id, msg.Data)
+				response.Data = "OK"
+			}
+
 		case "echo":
 			response = Message{Action: "reply", Data: msg.Data}
 		// Add more actions as needed
 		default:
 			log.Println("Unknown action:", msg.Action)
 		}
-
-		//fmt.Println("response: ", response)
 
 		responseBytes, _ := json.Marshal(response)
 		if err := ws.WriteMessage(websocket.TextMessage, responseBytes); err != nil {
@@ -211,6 +221,22 @@ func sendNewPostToAll(w http.ResponseWriter) {
 	responseBytes, _ := json.Marshal(replyUpdate)
 
 	for _, client := range clients {
+		if err := client.Conn.WriteMessage(websocket.TextMessage, responseBytes); err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+}
+
+func sendNewLike(w http.ResponseWriter, userId int, data string) {
+	var replyUpdate Message
+	replyUpdate.Action = "sendNewLikes"
+	replyUpdate.Data = data
+	responseBytes, _ := json.Marshal(replyUpdate)
+	for _, client := range clients {
+		if client.User.Id == userId {
+			continue
+		}
 		if err := client.Conn.WriteMessage(websocket.TextMessage, responseBytes); err != nil {
 			fmt.Println(err)
 			return

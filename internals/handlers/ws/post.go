@@ -159,13 +159,30 @@ func getLastPost(w http.ResponseWriter) (int, string) {
 	return 200, string(toSend)
 }
 
+func updateLike(w http.ResponseWriter, data string) int {
+	var post md.Post
+	if err := json.Unmarshal([]byte(data), &post); err != nil {
+		fmt.Println("Internal server error: " + err.Error())
+		return 0
+	}
+
+	bodyData := md.RequestBody{
+		Action: "updateLike",
+		Body:   post,
+	}
+
+	resp, err := tools.SendRequest(w, bodyData, "POST", conf.URLPost)
+	if err != nil {
+		fmt.Println("Internal server error: " + err.Error())
+		return 0
+	}
+	defer resp.Body.Close()
+
+	return resp.StatusCode
+}
+
 func decodeBase64Image(base64Image string, outputFilePath string) (string, error) {
-
-	fmt.Println("Début du décodage de l'image")
-
-	// Vérifier si la chaîne commence par "data:"
 	if strings.HasPrefix(base64Image, "data:") {
-		// Extraire la partie Base64 après la virgule
 		parts := strings.SplitN(base64Image, ",", 2)
 		if len(parts) != 2 {
 			return "", errors.New("format de chaîne data: invalide")
@@ -173,29 +190,20 @@ func decodeBase64Image(base64Image string, outputFilePath string) (string, error
 		base64Image = parts[1]
 	}
 
-	fmt.Println("Base64Image après extraction:", base64Image[:30]) // Afficher les premiers caractères pour vérifier
-
-	// Décoder la chaîne Base64 en un tableau d'octets
 	data, err := base64.StdEncoding.DecodeString(base64Image)
 	if err != nil {
-		fmt.Println("Erreur lors du décodage Base64:", err)
+		fmt.Println("Error decoding the Base64:", err)
 		return "", err
 	}
-
-	fmt.Println("Décodage Base64 réussi. Longueur des données:", len(data))
-
-	// Vérifier le contenu décodé (uniquement les premiers octets pour éviter une sortie massive)
 
 	fileName := outputFilePath + uuid.New().String() + ".jpeg"
 
-	// Écrire les octets décodés dans un fichier
 	err = os.WriteFile(fileName, data, 0644)
 	if err != nil {
-		fmt.Println("Erreur lors de l'écriture du fichier:", err)
+		fmt.Println("Error building the image:", err)
 		return "", err
 	}
 
-	fmt.Println("Écriture du fichier réussie:", outputFilePath)
 	return fileName, nil
 }
 
