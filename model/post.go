@@ -7,6 +7,8 @@ type Post struct {
 	UserId     int       `json:"userID"`
 	Nickname   string    `json:"nickname"`
 	Categorie  []string  `json:"categorie"`
+	LikedBy    []string  `json:"likedBy"`
+	DislikedBy []string  `json:"dislikedBy"`
 	Content    string    `json:"content"`
 	Img        string    `json:"img"`
 	ImgBase64  string    `json:"imgBase64"`
