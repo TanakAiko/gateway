@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/google/uuid"
@@ -197,6 +198,14 @@ func decodeBase64Image(base64Image string, outputFilePath string) (string, error
 	}
 
 	fileName := outputFilePath + uuid.New().String() + ".jpeg"
+
+	// Créer tous les répertoires nécessaires
+	dir := filepath.Dir(fileName)
+	err = os.MkdirAll(dir, 0755)
+	if err != nil {
+		fmt.Println("Error creating directories:", err)
+		return "", err
+	}
 
 	err = os.WriteFile(fileName, data, 0644)
 	if err != nil {
