@@ -11,7 +11,9 @@ import (
 )
 
 func AuthorizedHandler(w http.ResponseWriter, r *http.Request) {
+
 	const action = "authorized"
+	fmt.Println("action: ", action)
 
 	if r.Method != http.MethodPost {
 		http.Error(w, "methode not allowed", http.StatusMethodNotAllowed)

@@ -18,6 +18,8 @@ func GetUserData(w http.ResponseWriter, sessionID string) (int, md.User) {
 		Body:   user,
 	}
 
+	fmt.Println("action: ", bodyData.Action)
+
 	resp, err := tools.SendRequest(w, bodyData, "POST", conf.URLauth)
 	if err != nil {
 		fmt.Println("Internal server error: " + err.Error())

@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	conf "gateway/config"
 	md "gateway/model"
 	"io"
@@ -11,6 +12,9 @@ import (
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	const action = "register"
+
+	fmt.Println("action: ", action)
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "methode not allowed", http.StatusMethodNotAllowed)
 		return

@@ -17,6 +17,7 @@ type Credential struct {
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	const action = "login"
+
 	fmt.Println("action: ", action)
 
 	if r.Method != http.MethodPost {
