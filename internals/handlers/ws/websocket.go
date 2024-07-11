@@ -144,6 +144,7 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 				response.Data = "error"
 			} else {
 				response.Data = posts
+				fmt.Println("posts: ", string(posts))
 			}
 
 		case "deletePost":
@@ -161,6 +162,15 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 			} else {
 				sendNewLike(w, client.User.Id, msg.Data)
 				response.Data = "OK"
+			}
+
+		case "commentCreate":
+			response.Action = "commentCreate"
+			status, postId := createComment(w, msg.Data)
+			if status != http.StatusCreated {
+				response.Data = "error"
+			} else {
+				response.Data = fmt.Sprintf("%d", postId)
 			}
 
 		case "echo":
