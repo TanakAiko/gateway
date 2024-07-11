@@ -105,8 +105,14 @@ func getAllPost(w http.ResponseWriter) (int, string) {
 			fmt.Println("Internal server error: " + err.Error())
 			return 0, ""
 		}
-
 		posts[i].ImgBase64 = base64Code
+
+		comments, err := getComments(w, posts[i].Id)
+		if err != nil {
+			fmt.Println("Internal server error: " + err.Error())
+			return 0, ""
+		}
+		posts[i].Comments = comments
 	}
 
 	response, err := json.Marshal(posts)
@@ -116,6 +122,36 @@ func getAllPost(w http.ResponseWriter) (int, string) {
 	}
 
 	return resp.StatusCode, string(response)
+}
+
+func getComments(w http.ResponseWriter, postId int) (string, error) {
+	var comment md.Comment
+	comment.PostId = postId
+
+	bodyData := md.RequestBody{
+		Action: "getAllPostComment",
+		Body:   comment,
+	}
+
+	respCom, err := tools.SendRequest(w, bodyData, "POST", conf.URLComment)
+	if err != nil {
+		fmt.Println("Internal server error: " + err.Error())
+		return "", err
+	}
+	defer respCom.Body.Close()
+
+	if respCom.StatusCode != http.StatusOK {
+		fmt.Println("Internal server error: " + err.Error())
+		return "", err
+	}
+
+	responseBody, err := io.ReadAll(respCom.Body)
+	if err != nil {
+		fmt.Println("Internal server error: " + err.Error())
+		return "", err
+	}
+
+	return string(responseBody), nil
 }
 
 func deletePost(w http.ResponseWriter, data string) int {

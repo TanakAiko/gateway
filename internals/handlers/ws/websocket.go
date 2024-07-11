@@ -163,6 +163,15 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 				response.Data = "OK"
 			}
 
+		case "commentCreate":
+			response.Action = "commentCreate"
+			status, postId := createComment(w, msg.Data)
+			if status != http.StatusCreated {
+				response.Data = "error"
+			} else {
+				response.Data = fmt.Sprintf("%d", postId)
+			}
+
 		case "echo":
 			response = Message{Action: "reply", Data: msg.Data}
 		// Add more actions as needed
