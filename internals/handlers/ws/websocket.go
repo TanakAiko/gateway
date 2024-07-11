@@ -144,7 +144,6 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 				response.Data = "error"
 			} else {
 				response.Data = posts
-				fmt.Println("posts: ", string(posts))
 			}
 
 		case "deletePost":
