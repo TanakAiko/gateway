@@ -154,22 +154,33 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 				response.Data = "OK"
 			}
 
-		case "updateLike":
-			response.Action = "updateLike"
-			if status := updateLike(w, msg.Data); status != http.StatusOK {
+		case "updatePostLike":
+			response.Action = "updatePostLike"
+			if status := updatePostLike(w, msg.Data); status != http.StatusOK {
 				response.Data = "error"
 			} else {
-				sendNewLike(w, client.User.Id, msg.Data)
+				sendNewLike(w, client.User.Id, msg.Data, "sendNewPostLikes")
 				response.Data = "OK"
 			}
 
 		case "commentCreate":
+			// fmt.Printf("\n\nmsg.Data: %v\n\n", msg.Data)
 			response.Action = "commentCreate"
 			status, postId := createComment(w, msg.Data)
 			if status != http.StatusCreated {
 				response.Data = "error"
 			} else {
+				sendNewCommentToAll(w)
 				response.Data = fmt.Sprintf("%d", postId)
+			}
+
+		case "updateCommentLike":
+			response.Action = "updateCommentLike"
+			if status := updateCommentLike(w, msg.Data); status != http.StatusOK {
+				response.Data = "error"
+			} else {
+				sendNewLike(w, client.User.Id, msg.Data, "sendNewCommentLikes")
+				response.Data = "OK"
 			}
 
 		case "echo":
@@ -237,9 +248,31 @@ func sendNewPostToAll(w http.ResponseWriter) {
 	}
 }
 
-func sendNewLike(w http.ResponseWriter, userId int, data string) {
+func sendNewCommentToAll(w http.ResponseWriter) {
 	var replyUpdate Message
-	replyUpdate.Action = "sendNewLikes"
+	replyUpdate.Action = "updateLastComment"
+	status, lastComment := getLastComment(w)
+	if status == 0 {
+		replyUpdate.Data = "error"
+	} else {
+		replyUpdate.Data = lastComment
+	}
+
+	replyUpdate.Data = string(lastComment)
+
+	responseBytes, _ := json.Marshal(replyUpdate)
+
+	for _, client := range clients {
+		if err := client.Conn.WriteMessage(websocket.TextMessage, responseBytes); err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+}
+
+func sendNewLike(w http.ResponseWriter, userId int, data string, action string) {
+	var replyUpdate Message
+	replyUpdate.Action = action
 	replyUpdate.Data = data
 	responseBytes, _ := json.Marshal(replyUpdate)
 	for _, client := range clients {

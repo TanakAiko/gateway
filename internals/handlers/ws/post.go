@@ -196,7 +196,7 @@ func getLastPost(w http.ResponseWriter) (int, string) {
 	return 200, string(toSend)
 }
 
-func updateLike(w http.ResponseWriter, data string) int {
+func updatePostLike(w http.ResponseWriter, data string) int {
 	var post md.Post
 	if err := json.Unmarshal([]byte(data), &post); err != nil {
 		fmt.Println("Internal server error: " + err.Error())
