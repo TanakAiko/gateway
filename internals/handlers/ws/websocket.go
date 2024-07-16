@@ -57,6 +57,13 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 
 	go writeToClients(client)
 
+	status, users := getAllUser(w)
+	if status != http.StatusOK {
+		fmt.Printf("Failed to get all users: %v\n", err)
+		return
+	}
+	sendAllUser(ws, users, user.Id)
+
 	// Infinite loop to listen for messages from the client
 	for {
 		var response Message
@@ -85,6 +92,13 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 				response.Data = "OK"
 			}
 
+			delete(clients, user.Id)
+			status, users := getAllUser(w)
+			if status != http.StatusOK {
+				fmt.Printf("Failed to get all users: %v\n", err)
+				return
+			}
+			sendNewUser(users, user.Id)
 		case "messageCreate":
 			response.Action = "messageCreate"
 			if status := createMessage(w, msg.Data); status != http.StatusOK {
@@ -183,6 +197,15 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 				response.Data = "OK"
 			}
 
+		case "sendNewUsertoAll":
+			status, users := getAllUser(w)
+			if status != http.StatusOK {
+				fmt.Printf("Failed to get all users: %v\n", err)
+				return
+			}
+			sendNewUser(users, user.Id)
+			continue
+
 		case "echo":
 			response = Message{Action: "reply", Data: msg.Data}
 		// Add more actions as needed
@@ -277,6 +300,60 @@ func sendNewLike(w http.ResponseWriter, userId int, data string, action string) 
 	responseBytes, _ := json.Marshal(replyUpdate)
 	for _, client := range clients {
 		if client.User.Id == userId {
+			continue
+		}
+		if err := client.Conn.WriteMessage(websocket.TextMessage, responseBytes); err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+}
+
+func sendAllUser(ws *websocket.Conn, users []md.User, id int) {
+	var newTab []md.User
+	var replyUpdate Message
+	replyUpdate.Action = "getAllUser"
+	for i := 0; i < len(users); i++ {
+		if _, ok := clients[users[i].Id]; ok {
+			users[i].Status = "online"
+		} else {
+			users[i].Status = "offline"
+		}
+		newTab = append(newTab, users[i])
+	}
+
+	tabBytes, _ := json.Marshal(newTab)
+	replyUpdate.Data = string(tabBytes)
+
+	responseBytes, _ := json.Marshal(replyUpdate)
+
+	if err := ws.WriteMessage(websocket.TextMessage, responseBytes); err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+
+func sendNewUser(users []md.User, id int) {
+	var newTab []md.User
+	var replyUpdate Message
+	replyUpdate.Action = "sendNewUsertoAll"
+
+	for i := 0; i < len(users); i++ {
+		if _, ok := clients[users[i].Id]; ok {
+			users[i].Status = "online"
+		} else {
+			users[i].Status = "offline"
+		}
+		newTab = append(newTab, users[i])
+	}
+
+	tabBytes, _ := json.Marshal(newTab)
+	replyUpdate.Data = string(tabBytes)
+
+	responseBytes, _ := json.Marshal(replyUpdate)
+
+	for _, client := range clients {
+		if client.User.Id == id {
 			continue
 		}
 		if err := client.Conn.WriteMessage(websocket.TextMessage, responseBytes); err != nil {

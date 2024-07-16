@@ -10,4 +10,5 @@ type User struct {
 	Email     string `json:"email"`
 	Password  string `json:"password"`
 	SessionID string `json:"sessionID"`
+	Status    string `json:"status"`
 }

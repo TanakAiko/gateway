@@ -18,7 +18,7 @@ func main() {
 
 	go ws.HandleMessages()
 
-	fmt.Printf("Gateway server starting on port http://localhost:%v\n", conf.Port)
+	// fmt.Printf("Gateway server starting on port http://localhost:%v\n", conf.Port)
 	if err := http.ListenAndServe(":"+conf.Port, nil); err != nil {
 		fmt.Println(err)
 	}
