@@ -104,7 +104,7 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 			if status, jsonMessage := createMessage(w, msg.Data); status != http.StatusOK {
 				response.Data = "error"
 			} else {
-				response.Data = "OK"
+				response.Data = jsonMessage
 				broadcast <- []byte(jsonMessage)
 			}
 
