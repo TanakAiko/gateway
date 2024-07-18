@@ -10,11 +10,11 @@ import (
 	"net/http"
 )
 
-func createMessage(w http.ResponseWriter, data string) int {
+func createMessage(w http.ResponseWriter, data string) (int, string) {
 	var mess md.MessageChat
 	if err := json.Unmarshal([]byte(data), &mess); err != nil {
 		fmt.Println("Internal server error: " + err.Error())
-		return 0
+		return 0, ""
 	}
 
 	bodyData := md.RequestBody{
@@ -25,11 +25,17 @@ func createMessage(w http.ResponseWriter, data string) int {
 	resp, err := tools.SendRequest(w, bodyData, "POST", conf.URLChat)
 	if err != nil {
 		fmt.Println("Internal server error: " + err.Error())
-		return 0
+		return 0, ""
 	}
 	defer resp.Body.Close()
 
-	return resp.StatusCode
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Internal server error: " + err.Error())
+		return 0, ""
+	}
+
+	return resp.StatusCode, string(responseBody)
 }
 
 func getMessages(w http.ResponseWriter) (int, string) {

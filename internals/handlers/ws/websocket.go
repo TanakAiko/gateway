@@ -101,17 +101,16 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 			sendNewUser(users, user.Id)
 		case "messageCreate":
 			response.Action = "messageCreate"
-			if status := createMessage(w, msg.Data); status != http.StatusOK {
+			if status, jsonMessage := createMessage(w, msg.Data); status != http.StatusOK {
 				response.Data = "error"
 			} else {
 				response.Data = "OK"
-				broadcast <- []byte(msg.Data)
+				broadcast <- []byte(jsonMessage)
 			}
 
 		case "messageGets":
 			response.Action = "messageGets"
-			status, chats := getMessages(w)
-			if status != http.StatusOK {
+			if status, chats := getMessages(w); status != http.StatusOK {
 				response.Data = "error"
 			} else {
 				response.Data = chats
