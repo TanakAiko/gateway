@@ -8,6 +8,8 @@ import (
 	md "gateway/model"
 	"io"
 	"net/http"
+
+	"github.com/gorilla/websocket"
 )
 
 func createMessage(w http.ResponseWriter, data string) (int, string) {
@@ -101,4 +103,42 @@ func setStatusRead(w http.ResponseWriter, data string) int {
 	defer resp.Body.Close()
 
 	return resp.StatusCode
+}
+
+func isAllRead(w http.ResponseWriter, userId int, ws *websocket.Conn) {
+	var replyUpdate Message
+	replyUpdate.Action = "isAllRead"
+
+	status, messagesString := getMessages(w)
+	if status != http.StatusOK {
+		fmt.Println("Internal server error (isAllRead): try to get message")
+		return
+	}
+	var messages []md.MessageChat
+	if err := json.Unmarshal([]byte(messagesString), &messages); err != nil {
+		fmt.Println("Internal server error (isAllRead): try to Unmarshal")
+		return
+	}
+
+	var idSender []int
+	for _, msg := range messages {
+		if msg.ReceiverId == userId && !msg.StatusRead {
+			idSender = append(idSender, msg.SenderId)
+		}
+	}
+
+	idSenderString, err := json.Marshal(idSender)
+	if err != nil {
+		fmt.Println("Internal server error (isAllRead): try to Unmarshal")
+		return
+	}
+
+	replyUpdate.Data = string(idSenderString)
+
+	responseBytes, _ := json.Marshal(replyUpdate)
+
+	if err := ws.WriteMessage(websocket.TextMessage, responseBytes); err != nil {
+		fmt.Println(err)
+		return
+	}
 }

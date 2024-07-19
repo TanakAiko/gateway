@@ -64,6 +64,8 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 	}
 	sendAllUser(ws, users, user.Id)
 
+	isAllRead(w, user.Id, ws)
+
 	// Infinite loop to listen for messages from the client
 	for {
 		var response Message
