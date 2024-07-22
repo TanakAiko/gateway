@@ -207,6 +207,14 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 			sendNewUser(users, user.Id)
 			continue
 
+		case "startTyping":
+			inTyping("startTyping", msg.Data)
+			continue
+
+		case "stopTyping":
+			inTyping("stopTyping", msg.Data)
+			continue
+
 		case "echo":
 			response = Message{Action: "reply", Data: msg.Data}
 		// Add more actions as needed
@@ -220,6 +228,27 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+}
+
+func inTyping(action string, data string) {
+	reply := Message{
+		Action: action,
+		Data:   data,
+	}
+
+	var mess md.MessageChat
+	if err := json.Unmarshal([]byte(data), &mess); err != nil {
+		fmt.Println("Internal server error: " + err.Error())
+		return
+	}
+
+	responseBytes, _ := json.Marshal(reply)
+
+	err := clients[mess.ReceiverId].Conn.WriteMessage(websocket.TextMessage, responseBytes)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 func HandleMessages() {
