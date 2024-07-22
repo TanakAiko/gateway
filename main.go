@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	http.HandleFunc("/getAllChats", mw.CorsMiddleware(hd.GetAllChatHandler))
 	http.HandleFunc("/getUserData", mw.CorsMiddleware(hd.GetUserDataHandler))
 	http.HandleFunc("/authorized", mw.CorsMiddleware(hd.AuthorizedHandler))
 	http.HandleFunc("/register", mw.CorsMiddleware(hd.RegisterHandler))

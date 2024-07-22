@@ -112,7 +112,7 @@ func HandlerWS(w http.ResponseWriter, r *http.Request) {
 
 		case "messageGets":
 			response.Action = "messageGets"
-			if status, chats := getMessages(w); status != http.StatusOK {
+			if status, chats := GetMessages(w); status != http.StatusOK {
 				response.Data = "error"
 			} else {
 				response.Data = chats
@@ -239,6 +239,11 @@ func inTyping(action string, data string) {
 	var mess md.MessageChat
 	if err := json.Unmarshal([]byte(data), &mess); err != nil {
 		fmt.Println("Internal server error: " + err.Error())
+		return
+	}
+
+	if _, ok := clients[mess.ReceiverId]; !ok {
+		fmt.Printf("User is not connected")
 		return
 	}
 

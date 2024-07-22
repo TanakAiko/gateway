@@ -40,7 +40,7 @@ func createMessage(w http.ResponseWriter, data string) (int, string) {
 	return resp.StatusCode, string(responseBody)
 }
 
-func getMessages(w http.ResponseWriter) (int, string) {
+func GetMessages(w http.ResponseWriter) (int, string) {
 	bodyData := md.RequestBody{
 		Action: "getChats",
 	}
@@ -109,7 +109,7 @@ func isAllRead(w http.ResponseWriter, userId int, ws *websocket.Conn) {
 	var replyUpdate Message
 	replyUpdate.Action = "isAllRead"
 
-	status, messagesString := getMessages(w)
+	status, messagesString := GetMessages(w)
 	if status != http.StatusOK {
 		fmt.Println("Internal server error (isAllRead): try to get message")
 		return
